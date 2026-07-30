@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Grade Calculator</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f4f7;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .container {
+            background-color: white;
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .description {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        input {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 15px;
+            width: 100%;
+        }
+
+        button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .add-btn {
+            background-color: #6c8f7a;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .add-btn:hover {
+            background-color: #557361;
+        }
+
+        .remove-btn {
+            background-color: #e57373;
+            color: white;
+        }
+
+        .remove-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            background-color: #333;
+            color: white;
+            font-size: 17px;
+            margin-top: 10px;
+        }
+
+        .calculate-btn:hover {
+            background-color: #555;
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f0f5f2;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .result h2 {
+            margin-bottom: 10px;
+        }
+
+        .grade {
+            font-size: 40px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .error {
+            color: #d32f2f;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .headers {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        @media (max-width: 600px) {
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+
+            .headers {
+                display: none;
+            }
+
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Grade Calculator</h1>
+
+        <p class="description">
+            Enter your assessments, marks, and weighting to calculate your overall grade.
+        </p>
+
+        <div class="headers">
+            <span>Assessment</span>
+            <span>Mark (%)</span>
+            <span>Weight (%)</span>
+            <span></span>
+        </div>
+
+        <div id="assessmentContainer">
+
+            <div class="input-row">
+                <input type="text" placeholder="e.g. Coursework 1" class="assessment-name">
+
+                <input type="number" placeholder="Mark" class="mark" min="0" max="100">
+
+                <input type="number" placeholder="Weight" class="weight" min="0" max="100">
+
+                <button class="remove-btn" onclick="removeAssessment(this)">
+                    Remove
+                </button>
+            </div>
+
+        </div>
+
+        <button class="add-btn" onclick="addAssessment()">
+            + Add Assessment
+        </button>
+
+        <button class="calculate-btn" onclick="calculateGrade()">
+            Calculate Overall Grade
+        </button>
+
+        <p id="errorMessage" class="error"></p>
+
+        <div id="result" class="result">
+
+            <h2>Your Overall Grade</h2>
+
+            <div id="overallGrade" class="grade">
+                0%
+            </div>
+
+            <p id="letterGrade"></p>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        // Add a new assessment
+        function addAssessment() {
+
+            const container = document.getElementById("assessmentContainer");
+
+            const newRow = document.createElement("div");
+
+            newRow.className = "input-row";
+
+            newRow.innerHTML = `
+                <input 
+                    type="text" 
+                    placeholder="e.g. Coursework 2" 
+                    class="assessment-name"
+                >
+
+                <input 
+                    type="number" 
+                    placeholder="Mark" 
+                    class="mark" 
+                    min="0" 
+                    max="100"
+                >
+
+                <input 
+                    type="number" 
+                    placeholder="Weight" 
+                    class="weight" 
+                    min="0" 
+                    max="100"
+                >
+
+                <button 
+                    class="remove-btn" 
+                    onclick="removeAssessment(this)"
+                >
+                    Remove
+                </button>
+            `;
+
+            container.appendChild(newRow);
+        }
+
+
+        // Remove an assessment
+        function removeAssessment(button) {
+
+            const row = button.parentElement;
+
+            row.remove();
+        }
+
+
+        // Calculate the overall grade
+        function calculateGrade() {
+
+            const marks = document.querySelectorAll(".mark");
+
+            const weights = document.querySelectorAll(".weight");
+
+            const errorMessage = document.getElementById("errorMessage");
+
+            const result = document.getElementById("result");
+
+            const overallGrade = document.getElementById("overallGrade");
+
+            const letterGrade = document.getElementById("letterGrade");
+
+
+            let totalWeightedMark = 0;
+
+            let totalWeight = 0;
+
+
+            errorMessage.textContent = "";
+
+
+            // Check each assessment
+            for (let i = 0; i < marks.length; i++) {
+
+                const mark = parseFloat(marks[i].value);
+
+                const weight = parseFloat(weights[i].value);
+
+
+                // Check if fields are empty
+                if (isNaN(mark) || isNaN(weight)) {
+
+                    errorMessage.textContent =
+                        "Please enter a mark and weight for every assessment.";
+
+                    result.style.display = "none";
+
+                    return;
+                }
+
+
+                // Check mark is between 0 and 100
+                if (mark < 0 || mark > 100) {
+
+                    errorMessage.textContent =
+                        "Marks must be between 0 and 100.";
+
+                    result.style.display = "none";
+
+                    return;
+                }
+
+
+                // Check weight is valid
+                if (weight < 0 || weight > 100) {
+
+                    errorMessage.textContent =
+                        "Weights must be between 0 and 100.";
+
+                    result.style.display = "none";
+
+                    return;
+                }
+
+
+                // Calculate weighted mark
+                totalWeightedMark += mark * (weight / 100);
+
+                totalWeight += weight;
+            }
+
+
+            // Make sure weights add up to 100%
+            if (totalWeight !== 100) {
+
+                errorMessage.textContent =
+                    "The total assessment weight must equal 100%. Current total: "
+                    + totalWeight + "%";
+
+                result.style.display = "none";
+
+                return;
+            }
+
+
+            // Display overall grade
+            const finalGrade = totalWeightedMark.toFixed(2);
+
+            overallGrade.textContent = finalGrade + "%";
+
+
+            // Calculate letter grade
+            let grade;
+
+
+            if (finalGrade >= 69.5) {
+
+                grade = "Distinction";
+
+            } else if (finalGrade >= 60) {
+
+                grade = "Merit";
+
+            } else if (finalGrade >= 50) {
+
+                grade = "Pass";
+
+            } else if (finalGrade >= 40) {
+
+                grade = "Pass";
+
+            } else {
+
+                grade = "F - Fail";
+            }
+
+
+            letterGrade.textContent = "Grade: " + grade;
+
+
+            // Show result
+            result.style.display = "block";
+        }
+
+    </script>
+
+</body>
+</html>
